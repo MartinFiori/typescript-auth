@@ -1,6 +1,11 @@
 import React, { useState } from "react";
+import { Navigate } from "react-router-dom";
 
-export default function Register() {
+type RegisterArgs = {
+	setAuth: Function;
+};
+
+export default function Register({ setAuth }: RegisterArgs) {
 	const [inputs, setInputs] = useState({
 		email: "",
 		name: "",
@@ -15,10 +20,33 @@ export default function Register() {
 			[e.target.name]: e.target.value,
 		});
 	};
+
+	const handleSubmit = async (e: any) => {
+		e.preventDefault();
+		try {
+			if ([email, name, password, password_copy].every(Boolean)) {
+				const response = await fetch(
+					"http://localhost:8080/auth/register",
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ email, password, name }),
+					}
+				);
+				const parseRes = await response.json();
+				localStorage.setItem("token", parseRes.token);
+				setAuth(true);
+			} else {
+				console.log("faltan cosas");
+			}
+		} catch (err: any) {
+			console.log(err.message);
+		}
+	};
 	return (
 		<div>
 			<h1>Register</h1>
-			<form>
+			<form onSubmit={e => handleSubmit(e)}>
 				<input
 					type="email"
 					name="email"
